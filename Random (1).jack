@@ -1,0 +1,7 @@
+class Random {
+    function int randRange(int range) {
+        var int seed;
+        let seed = Time.getTime();
+        return seed - ((seed / range) * range);
+    }
+}

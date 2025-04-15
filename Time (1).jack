@@ -1,0 +1,13 @@
+class Time {
+    static int time;
+    
+    function void init() {
+        let time = 0;
+        return;
+    }
+    
+    function int getTime() {
+        let time = time + 1;
+        return time;
+    }
+}

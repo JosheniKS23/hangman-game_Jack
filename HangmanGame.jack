@@ -1,0 +1,637 @@
+class HangmanGame {
+    field Array words;
+    field Array clues;
+    field Array guessedLetters;
+    field String currentWord;
+    field String currentClue;
+    field int mistakes;
+    field int player1Score;
+    field int player2Score;
+    field int currentPlayer;
+    field Questions questionSet;
+    static int score;
+    field int currentDifficulty;
+
+    constructor HangmanGame new() {
+        let words = Array.new(10);
+        let clues = Array.new(10);
+        let guessedLetters = Array.new(26);
+        let mistakes = 0;
+        let questionSet = Questions.new();
+        let player1Score = 0;
+        let player2Score = 0;
+        return this;
+    }
+
+    method void choosedifficultyLevel() {
+        var int key1;
+        var int key2;
+        var int index;
+
+        do Output.moveCursor(9, 22);
+        do Output.printString("Choose Difficulty Level:");
+        do Output.moveCursor(11, 24);
+        do Output.printString("Press E for Easy");
+        do Output.moveCursor(12, 24);
+        do Output.printString("Press M for Medium");
+        do Output.moveCursor(13, 24);
+        do Output.printString("Press H for Hard");
+        do Output.println();
+
+        // Read Key Input
+        let key1 = Keyboard.readChar();
+
+        do Screen.clearScreen();  // Clear the screen before showing next menu
+        do Output.moveCursor(9, 22);
+        do Output.printString("Choose the Field:");
+        do Output.moveCursor(11, 24);
+        do Output.printString("Press 1 for Geography");
+        do Output.moveCursor(12, 24);
+        do Output.printString("Press 2 for General Knowledge");
+        do Output.moveCursor(13, 24);
+        do Output.printString("Press 3 for Technology");
+        do Output.println();
+    
+        // Read Key Input
+        let key2 = Keyboard.readChar();
+    
+        // Easy difficulty (E key)
+        if (key1 = 69) {
+	    let currentDifficulty = 1;
+            // Geography (1 key)
+            if (key2 = 49) {
+                let clues = questionSet.easyGeoClues();
+                let words = questionSet.easyGeo();
+            }
+            // General Knowledge (2 key)
+            if (key2 = 50) {
+                let clues = questionSet.easyGKClues();
+                let words = questionSet.easyGK();
+            }
+            // Technology (3 key)
+            if (key2 = 51) {
+                let clues = questionSet.easyTechClues();
+                let words = questionSet.easyTech();
+            }
+        }
+    
+        // Medium difficulty (M key)
+        if (key1 = 77) {
+	    let currentDifficulty = 2;
+            // Geography (1 key)
+            if (key2 = 49) {
+                let clues = questionSet.mediumGeoClues();
+                let words = questionSet.mediumGeo();
+            }
+            // General Knowledge (2 key)
+            if (key2 = 50) {
+                let clues = questionSet.mediumGKClues();
+                let words = questionSet.mediumGK();
+            }
+            // Technology (3 key)
+            if (key2 = 51) {
+                let clues = questionSet.mediumTechClues();
+                let words = questionSet.mediumTech();
+            }
+        }
+        
+        // Hard difficulty (H key)
+        if (key1 = 72) {
+	    let currentDifficulty = 3;
+            // Geography (1 key)
+            if (key2 = 49) {
+                let clues = questionSet.hardGeoClues();
+                let words = questionSet.hardGeo();
+            }
+            // General Knowledge (2 key)
+            if (key2 = 50) {
+                let clues = questionSet.hardGKClues();
+                let words = questionSet.hardGK();
+            }
+            // Technology (3 key)
+            if (key2 = 51) {
+                let clues = questionSet.hardTechClues();
+                let words = questionSet.hardTech();
+            }
+        }
+        
+        return;
+    }
+
+    method void run() {
+
+	var char key;
+
+        do Screen.clearScreen();
+
+        do Output.moveCursor(9, 23);
+        do Output.printString("Player Modes: ");
+        do Output.moveCursor(10,15);
+        do Output.printString("Press 1 for Single Player Mode");
+        do Output.moveCursor(11,6);
+        do Output.printString("Press 2 for Two Player Mode(5 guesses for each player)");
+	do Output.println();
+	
+	let key = Keyboard.readChar();
+
+	if (key = 49) {
+
+		do SinglePlayer();
+
+	}
+
+	else {
+
+		if (key = 50) {
+
+			do DoublePlayer();
+
+		}
+		
+		else {
+
+			do Sys.halt();
+
+		}
+
+	}
+
+
+	return;
+
+    }
+
+    method void SinglePlayer() {
+
+	var int index;
+        var char key;
+        var boolean gameOver;
+        var boolean wordCompleted;
+        
+        let gameOver = false;
+        
+        while (~gameOver) {
+            
+            do Screen.clearScreen();
+
+            do choosedifficultyLevel();
+
+            let index = Random.randRange(10);
+            let currentWord = words[index];
+            let currentClue = clues[index];
+            let wordCompleted = false;
+            let mistakes = 0;
+            do resetGuessedLetters();
+
+            while (~wordCompleted) {
+                if (mistakes < 7) {
+                    do Time.getTime();
+                    do drawGame();
+                    let key = Keyboard.readChar();
+                    
+                    if (isValidGuess(key)) {
+                        do processGuess(key);
+                        let wordCompleted = checkWordComplete();
+                    }
+                }
+                else {
+                    let wordCompleted = true;
+                }
+            }
+            
+	    do Time.getTime();
+            
+            if (checkWordComplete()) {
+
+		if (currentDifficulty = 1) {
+
+			let score = score + 1;
+
+		}
+
+		else {
+
+			if (currentDifficulty = 2) {
+
+				let score = score + 2;
+
+			}
+
+			else {
+
+				let score = score + 3;
+
+			}
+
+		}
+
+                do Screen.clearScreen();
+                do Output.moveCursor(10, 25);
+                do Output.printString("Good Job!");
+                do Output.println();
+                do Output.moveCursor(11, 22);
+                do Output.printString("Current Score: ");
+                do Output.printInt(score);
+                do Output.println();
+                do Output.moveCursor(12, 22);
+                do Output.printString("Play again? (Y/N)");
+
+            } else {
+
+                do Screen.clearScreen();
+                do Output.moveCursor(10, 15);
+                do Output.printString("Better Luck Next Time!");
+                do Output.println();
+                do Output.moveCursor(10, 15);
+                do Output.printString("Game Over! The word was: ");
+                do Output.printString(currentWord);
+                do Output.println();
+                do Output.moveCursor(11, 15);
+                do Output.printString("Current Score: ");
+                do Output.printInt(score);
+                do Output.println();
+                do Output.moveCursor(12, 15);
+                do Output.printString("Play again? (Y/N)");
+            }
+            
+            let key = Keyboard.readChar();
+            if ((key = 89) | (key = 121)) { // 'Y' or 'y'
+                let gameOver = false;
+            }
+            else {
+                let gameOver = true;
+            }
+        }
+        return;
+    }
+
+    method void DoublePlayer() {
+        var int index;
+        var int i;
+        var boolean success;
+        
+        let currentPlayer = 1;
+        let i = 0;
+        while (i < 5) {
+
+            do Time.getTime();
+
+            do Screen.clearScreen();
+
+            do Output.moveCursor(8, 28);
+            do Output.printString("Player 1:");
+
+            do choosedifficultyLevel();
+
+            let index = Random.randRange(10);
+            let currentWord = words[index];
+            let currentClue = clues[index];
+            do Screen.clearScreen();
+            let success = playWord();
+            
+            if (success) {
+
+		if (currentDifficulty = 1) {
+
+			let player1Score = player1Score + 1;
+
+		}
+
+		else {
+
+			if (currentDifficulty = 2) {
+
+				let player1Score = player1Score + 2;
+
+			}
+
+			else {
+
+				let player1Score = player1Score + 3;
+
+			}
+
+		}
+
+            }
+
+            if (checkWordComplete()) {
+
+                do Screen.clearScreen();
+                do Output.moveCursor(10, 25);
+                do Output.printString("Good Job!");
+                do Output.println();
+                do Output.moveCursor(11, 22);
+                do Output.printString("Player 1 Score: ");
+                do Output.printInt(player1Score);
+                do Output.println();
+                do Output.moveCursor(12, 15);
+		do Output.printString("Press any key to continue: ");
+
+            } else {
+                do Screen.clearScreen();
+                do Output.moveCursor(10, 15);
+                do Output.printString("Better Luck Next Time!");
+                do Output.println();
+                do Output.moveCursor(10, 15);
+                do Output.printString("Game Over! The word was: ");
+                do Output.printString(currentWord);
+                do Output.println();
+                do Output.moveCursor(11, 15);
+                do Output.printString("Player 1 Score: ");
+                do Output.printInt(player1Score);
+                do Output.println();
+                do Output.moveCursor(12, 15);
+		do Output.printString("Press any key to continue: ");
+
+            }
+
+            do Keyboard.readChar();
+            let i = i + 1;
+
+        }
+        
+        let currentPlayer = 2;
+        let i = 0;
+        while (i < 5) {
+
+            do Time.getTime();
+
+            do Screen.clearScreen();
+
+            do Output.moveCursor(8, 28);
+            do Output.printString("Player 2:");
+
+            do choosedifficultyLevel();
+
+            let index = Random.randRange(10);
+            let currentWord = words[index];
+            let currentClue = clues[index];
+            do Screen.clearScreen();
+            let success = playWord();
+            
+            if (success) {
+
+		if (currentDifficulty = 1) {
+
+			let player2Score = player2Score + 1;
+
+		}
+
+		else {
+
+			if (currentDifficulty = 2) {
+
+				let player2Score = player2Score + 2;
+
+			}
+
+			else {
+
+				let player2Score = player2Score + 3;
+
+			}
+
+		}
+
+            }
+            
+            if (checkWordComplete()) {
+
+                do Screen.clearScreen();
+                do Output.moveCursor(10, 25);
+                do Output.printString("Good Job!");
+                do Output.println();
+                do Output.moveCursor(11, 22);
+                do Output.printString("Player 2 Score: ");
+                do Output.printInt(player2Score);
+                do Output.println();
+                do Output.moveCursor(12, 15);
+		do Output.printString("Press any key to continue: ");
+
+            } else {
+                do Screen.clearScreen();
+                do Output.moveCursor(10, 15);
+                do Output.printString("Better Luck Next Time!");
+                do Output.println();
+                do Output.moveCursor(10, 15);
+                do Output.printString("Game Over! The word was: ");
+                do Output.printString(currentWord);
+                do Output.println();
+                do Output.moveCursor(11, 15);
+                do Output.printString("Player 2 Score: ");
+                do Output.printInt(player2Score);
+                do Output.println();
+                do Output.moveCursor(12, 15);
+		do Output.printString("Press any key to continue: ");
+
+            }
+
+            do Keyboard.readChar();
+            let i = i + 1;
+
+        }
+        
+        do Screen.clearScreen();
+        do Output.moveCursor(10, 25);
+        do Output.printString("GAME OVER!");
+        do Output.println();
+        do Output.printString("Player 1 Final Score: ");
+        do Output.printInt(player1Score);
+        do Output.println();
+        do Output.printString("Player 2 Final Score: ");
+        do Output.printInt(player2Score);
+        do Output.println();
+        do Output.printString("Winner is: ");
+        do Output.println();
+
+	if (player1Score > player2Score) {
+		do Output.printString("Player 1!");
+	}
+	else {
+		if (player1Score < player2Score) {
+			do Output.printString("Player 2!");
+		}
+		else {
+			do Output.printString("Both the Players!");
+		}
+	}
+
+        do Output.println();
+        do Output.printString("Press any key to exit...");
+        do Keyboard.readChar();
+        
+        return;
+
+    }
+
+    method boolean playWord() {
+        var boolean wordCompleted;
+        var char key;
+        
+        let wordCompleted = false;
+        let mistakes = 0;
+        do resetGuessedLetters();
+        
+        while ((~wordCompleted) & (mistakes < 7)) {
+            do drawGame();
+            let key = Keyboard.readChar();
+            
+            if (isValidGuess(key)) {
+                do processGuess(key);
+                let wordCompleted = checkWordComplete();
+            }
+        }
+        
+        return wordCompleted;
+        }
+
+    method void drawGame() {
+        var int i;
+        
+        do Screen.clearScreen();
+        do drawHangman();
+        
+        // Draw word
+        let i = 0;
+        do Output.moveCursor(15, 0);
+        do Output.printString("Word: ");
+        while (i < currentWord.length()) {
+            if (isLetterGuessed(currentWord.charAt(i))) {
+                do Output.printChar(currentWord.charAt(i));
+            } else {
+                do Output.printChar(95); // underscore
+            }
+            do Output.printChar(32); // space
+            let i = i + 1;
+        }
+        
+        do Output.moveCursor(17, 0);
+        do Output.printString("Clue: ");
+        do Output.printString(currentClue);
+        
+        do Output.moveCursor(19, 0);
+        do Output.printString("Guessed letters: ");
+        let i = 0;
+        while (i < 26) {
+            if (guessedLetters[i] = 1) {
+                do Output.printChar(65 + i);
+                do Output.printChar(32);
+            }
+            let i = i + 1;
+        }
+        
+        do Output.moveCursor(21, 0);
+        do Output.printString("Player ");
+        do Output.printInt(currentPlayer);
+        do Output.printString(" Score: ");
+        if (currentPlayer = 1) {
+            do Output.printInt(player1Score);
+        } else {
+            do Output.printInt(player2Score);
+        }
+        
+        return;
+    }
+
+    method void drawHangman() {
+        // Base
+        if (mistakes > 0) {
+            do Screen.drawLine(100, 150, 200, 150);
+        }
+        // Pole
+        if (mistakes > 1) {
+            do Screen.drawLine(150, 150, 150, 50);
+            do Screen.drawLine(150, 50, 180, 50);
+        }
+        // Head
+        if (mistakes > 2) {
+            do Screen.drawCircle(180, 65, 15);
+        }
+        // Body
+        if (mistakes > 3) {
+            do Screen.drawLine(180, 80, 180, 110);
+        }
+        // Arms
+        if (mistakes > 4) {
+            do Screen.drawLine(180, 90, 160, 100);
+            do Screen.drawLine(180, 90, 200, 100);
+        }
+        // Legs
+        if (mistakes > 5) {
+            do Screen.drawLine(180, 110, 160, 130);
+            do Screen.drawLine(180, 110, 200, 130);
+        }
+        return;
+    }
+
+    method boolean isValidGuess(char key) {
+        return ((key > 64) & (key < 91)) | ((key > 96) & (key < 123));
+    }
+
+    method void processGuess(char key) {
+        var char upperKey;
+        var int i;
+        var boolean found;
+        
+        if (key > 96) {
+            let upperKey = key - 32;
+        } else {
+            let upperKey = key;
+        }
+        
+        let guessedLetters[upperKey - 65] = 1;
+        
+        let found = false;
+        let i = 0;
+        while (i < currentWord.length()) {
+            if (currentWord.charAt(i) = upperKey) {
+                let found = true;
+            }
+            let i = i + 1;
+        }
+        
+        if (~found) {
+            let mistakes = mistakes + 1;
+        }
+        return;
+    }
+
+    method boolean checkWordComplete() {
+        var int i;
+        let i = 0;
+        while (i < currentWord.length()) {
+            if (~isLetterGuessed(currentWord.charAt(i))) {
+                return false;
+            }
+            let i = i + 1;
+        }
+        return true;
+    }
+
+    method boolean isLetterGuessed(char letter) {
+        return guessedLetters[letter - 65] = 1;
+    }
+
+    method void resetGuessedLetters() {
+
+        var int i;
+
+        do Time.getTime();
+
+        let i = 0;
+        while (i < 26) {
+            let guessedLetters[i] = 0;
+            let i = i + 1;
+        }
+        return;
+    }
+
+    method void dispose() {
+        do words.dispose();
+        do clues.dispose();
+        do guessedLetters.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

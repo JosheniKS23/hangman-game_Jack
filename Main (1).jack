@@ -1,0 +1,27 @@
+class Main {
+    function void main() {
+        var int key;
+        var HangmanGame game; // Declare the variable at the start
+
+        // Display Game Title
+        do Output.moveCursor(10, 25);
+        do Output.printString("HANGMAN");
+        do Output.println();
+        do Output.println();
+        do Output.printString("The Word Guessing Game");
+        do Output.println();
+        do Output.printString("Press P to Play!");
+        do Output.println();
+
+        // Read Key Input
+        let key = Keyboard.readChar();
+
+        // If 'P' is pressed (ASCII 80), start the game
+        if (key = 80) {
+            let game = HangmanGame.new();
+            do game.run();
+        }
+
+        return;
+    }
+}
