@@ -372,5 +372,29 @@ class Questions {
 
 	}
 
+	method void dispose() {
+
+        	do easyGeo.dispose();
+	        do easyGeoClues.dispose();
+	        do mediumGeo.dispose();
+        	do mediumGeoClues.dispose();
+	        do hardGeo.dispose();
+	        do hardGeoClues.dispose();
+        	do easyGK.dispose();
+	        do easyGKClues.dispose();
+	        do mediumGK.dispose();
+		do mediumGKClues.dispose();
+	        do hardGK.dispose();
+	        do hardGKClues.dispose();
+	        do easyTech.dispose();
+		do easyTechClues.dispose();
+	        do mediumTech.dispose();
+	        do mediumTechClues.dispose();
+	        do hardTech.dispose();
+	        do hardTechClues.dispose();
+	        do Memory.deAlloc(this);
+	        return;
+
+    }
 	
 }
