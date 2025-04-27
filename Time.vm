@@ -1,0 +1,12 @@
+function Time.init 0
+push constant 0
+pop static 0
+push constant 0
+return
+function Time.getTime 0
+push static 0
+push constant 1
+add
+pop static 0
+push static 0
+return
