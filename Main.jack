@@ -1,0 +1,32 @@
+class Main {
+    function void main() {
+        var char key;
+        var HangmanDisplay game; 
+
+	do Output.moveCursor(9,20);
+	do Output.printString("----------------------");
+        do Output.moveCursor(10, 27);
+        do Output.printString("Hangman");
+        do Output.println();
+        do Output.moveCursor(12, 20);
+        do Output.printString("The Word Guessing Game");
+        do Output.println();
+        do Output.moveCursor(14, 22);
+        do Output.printString("Press P to Play!");
+	do Output.moveCursor(15,20);
+	do Output.printString("----------------------");
+
+        let key = Keyboard.readChar();
+
+        if (key = 80) {  
+            let game = HangmanDisplay.new();
+            do game.run();
+        } else {
+            do Screen.clearScreen();
+            do Output.moveCursor(10, 25);
+            do Output.printString("Exiting...");
+        }
+        
+        return;
+    }
+}
