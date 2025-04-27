@@ -1,4 +1,7 @@
-class HangmanGame {
+class HangmanDisplay {
+
+    static int score;
+
     field Array words;
     field Array clues;
     field Array guessedLetters;
@@ -9,10 +12,11 @@ class HangmanGame {
     field int player2Score;
     field int currentPlayer;
     field Questions questionSet;
-    static int score;
     field int currentDifficulty;
+    field String feedbackMessage;
+    field boolean hintUsed;
 
-    constructor HangmanGame new() {
+    constructor HangmanDisplay new() {
         let words = Array.new(10);
         let clues = Array.new(10);
         let guessedLetters = Array.new(26);
@@ -20,6 +24,7 @@ class HangmanGame {
         let questionSet = Questions.new();
         let player1Score = 0;
         let player2Score = 0;
+        let feedbackMessage = "Welcome to Hangman! Make your first guess.";
         return this;
     }
 
@@ -28,6 +33,26 @@ class HangmanGame {
         var int key2;
         var int index;
 
+        do difficulty();
+
+        let key1 = Keyboard.readChar();
+
+        do category();
+
+        let key2 = Keyboard.readChar();
+
+        if (((key1 = 69) | (key1 = 77) | (key1 = 72)) & ((key2 = 49) | (key2 = 50) | (key2 = 51))) {
+            do checkAndAssign(key1,key2);
+        }
+        else {
+            do choosedifficultyLevel();
+        }
+
+        return;
+    }
+
+    method void difficulty() {
+        do Screen.clearScreen();
         do Output.moveCursor(9, 22);
         do Output.printString("Choose Difficulty Level:");
         do Output.moveCursor(11, 24);
@@ -38,9 +63,10 @@ class HangmanGame {
         do Output.printString("Press H for Hard");
         do Output.println();
 
-        // Read Key Input
-        let key1 = Keyboard.readChar();
+        return;
+    }
 
+    method void category() {
         do Screen.clearScreen();  // Clear the screen before showing next menu
         do Output.moveCursor(9, 22);
         do Output.printString("Choose the Field:");
@@ -51,13 +77,16 @@ class HangmanGame {
         do Output.moveCursor(13, 24);
         do Output.printString("Press 3 for Technology");
         do Output.println();
-    
-        // Read Key Input
-        let key2 = Keyboard.readChar();
-    
+
+        return;
+    }
+
+    method void checkAndAssign(int key1, int key2) {
+
         // Easy difficulty (E key)
-        if (key1 = 69) {
-	    let currentDifficulty = 1;
+        if (key1 = 69) { // Easy difficulty (E key)
+            let currentDifficulty = 1;
+            
             // Geography (1 key)
             if (key2 = 49) {
                 let clues = questionSet.easyGeoClues();
@@ -74,10 +103,11 @@ class HangmanGame {
                 let words = questionSet.easyTech();
             }
         }
-    
+        
         // Medium difficulty (M key)
         if (key1 = 77) {
-	    let currentDifficulty = 2;
+            let currentDifficulty = 2;
+            
             // Geography (1 key)
             if (key2 = 49) {
                 let clues = questionSet.mediumGeoClues();
@@ -97,7 +127,8 @@ class HangmanGame {
         
         // Hard difficulty (H key)
         if (key1 = 72) {
-	    let currentDifficulty = 3;
+            let currentDifficulty = 3;
+            
             // Geography (1 key)
             if (key2 = 49) {
                 let clues = questionSet.hardGeoClues();
@@ -113,14 +144,13 @@ class HangmanGame {
                 let clues = questionSet.hardTechClues();
                 let words = questionSet.hardTech();
             }
-        }
-        
+        } 
+
         return;
     }
 
     method void run() {
-
-	var char key;
+        var char key;
 
         do Screen.clearScreen();
 
@@ -130,40 +160,32 @@ class HangmanGame {
         do Output.printString("Press 1 for Single Player Mode");
         do Output.moveCursor(11,6);
         do Output.printString("Press 2 for Two Player Mode(5 guesses for each player)");
-	do Output.println();
-	
-	let key = Keyboard.readChar();
+	do Output.moveCursor(13,1);
+	do Output.printString("NOTE: If hint not used, Score: +1(Easy), +3(Medium), +5(Hard).");
+	do Output.moveCursor(14,7);
+	do Output.printString("If hint used, Score: +0(Easy), +1(Medium), +3(Hard).");
+        do Output.println();
+        
+        let key = Keyboard.readChar();
 
-	if (key = 49) {
+        if (key = 49) {
+            do singlePlayer();
+        }
+        else {
+            if (key = 50) {
+                do doublePlayer();
+            }
+            
+            else {
+                do Sys.halt();
+            }
+        }
 
-		do SinglePlayer();
-
-	}
-
-	else {
-
-		if (key = 50) {
-
-			do DoublePlayer();
-
-		}
-		
-		else {
-
-			do Sys.halt();
-
-		}
-
-	}
-
-
-	return;
-
+        return;
     }
 
-    method void SinglePlayer() {
-
-	var int index;
+    method void singlePlayer() {
+        var int index;
         var char key;
         var boolean gameOver;
         var boolean wordCompleted;
@@ -175,7 +197,7 @@ class HangmanGame {
             do Screen.clearScreen();
 
             do choosedifficultyLevel();
-
+            do Screen.clearScreen();
             let index = Random.randRange(10);
             let currentWord = words[index];
             let currentClue = clues[index];
@@ -198,33 +220,37 @@ class HangmanGame {
                     let wordCompleted = true;
                 }
             }
+            do Time.getTime();
             
-	    do Time.getTime();
-            
+            if (checkWordComplete() & ~(hintUsed)) {
+                if (currentDifficulty = 1) {
+                    let score = score + 1;
+                }
+                else {
+                    if (currentDifficulty = 2) {
+                        let score = score + 3;
+                    }
+                    else {
+                        let score = score + 5;
+                    }
+                }
+            }
+
+            if (checkWordComplete() & (hintUsed)) {
+                if (currentDifficulty = 1) {
+                    let score = score + 0;
+                }
+                else {
+                    if (currentDifficulty = 2) {
+                        let score = score + 1;
+                    }
+                    else {
+                        let score = score + 3;
+                    }
+                }
+            }
+
             if (checkWordComplete()) {
-
-		if (currentDifficulty = 1) {
-
-			let score = score + 1;
-
-		}
-
-		else {
-
-			if (currentDifficulty = 2) {
-
-				let score = score + 2;
-
-			}
-
-			else {
-
-				let score = score + 3;
-
-			}
-
-		}
-
                 do Screen.clearScreen();
                 do Output.moveCursor(10, 25);
                 do Output.printString("Good Job!");
@@ -235,9 +261,8 @@ class HangmanGame {
                 do Output.println();
                 do Output.moveCursor(12, 22);
                 do Output.printString("Play again? (Y/N)");
-
-            } else {
-
+            } 
+            else {
                 do Screen.clearScreen();
                 do Output.moveCursor(10, 15);
                 do Output.printString("Better Luck Next Time!");
@@ -265,7 +290,7 @@ class HangmanGame {
         return;
     }
 
-    method void DoublePlayer() {
+    method void doublePlayer() {
         var int index;
         var int i;
         var boolean success;
@@ -282,41 +307,41 @@ class HangmanGame {
             do Output.printString("Player 1:");
 
             do choosedifficultyLevel();
-
+            do Screen.clearScreen();
             let index = Random.randRange(10);
             let currentWord = words[index];
             let currentClue = clues[index];
-            do Screen.clearScreen();
             let success = playWord();
             
-            if (success) {
+            if (success & ~(hintUsed)) {
+                if (currentDifficulty = 1) {
+                    let player1Score = player1Score + 1;
+                }
+                else {
+                    if (currentDifficulty = 2) {
+                        let player1Score = player1Score + 3;
+                    }
+                    else {
+                        let player1Score = player1Score + 5;
+                    }
+                }
+            }
 
-		if (currentDifficulty = 1) {
-
-			let player1Score = player1Score + 1;
-
-		}
-
-		else {
-
-			if (currentDifficulty = 2) {
-
-				let player1Score = player1Score + 2;
-
-			}
-
-			else {
-
-				let player1Score = player1Score + 3;
-
-			}
-
-		}
-
+            if (success & (hintUsed)) {
+                if (currentDifficulty = 1) {
+                    let player1Score = player1Score + 0;
+                }
+                else {
+                    if (currentDifficulty = 2) {
+                        let player1Score = player1Score + 1;
+                    }
+                    else {
+                        let player1Score = player1Score + 3;
+                    }
+                }
             }
 
             if (checkWordComplete()) {
-
                 do Screen.clearScreen();
                 do Output.moveCursor(10, 25);
                 do Output.printString("Good Job!");
@@ -326,9 +351,9 @@ class HangmanGame {
                 do Output.printInt(player1Score);
                 do Output.println();
                 do Output.moveCursor(12, 15);
-		do Output.printString("Press any key to continue: ");
-
-            } else {
+                do Output.printString("Press any key to continue: ");
+            } 
+            else {
                 do Screen.clearScreen();
                 do Output.moveCursor(10, 15);
                 do Output.printString("Better Luck Next Time!");
@@ -342,13 +367,11 @@ class HangmanGame {
                 do Output.printInt(player1Score);
                 do Output.println();
                 do Output.moveCursor(12, 15);
-		do Output.printString("Press any key to continue: ");
-
+                do Output.printString("Press any key to continue: ");
             }
 
             do Keyboard.readChar();
             let i = i + 1;
-
         }
         
         let currentPlayer = 2;
@@ -363,41 +386,41 @@ class HangmanGame {
             do Output.printString("Player 2:");
 
             do choosedifficultyLevel();
-
+            do Screen.clearScreen();
             let index = Random.randRange(10);
             let currentWord = words[index];
             let currentClue = clues[index];
-            do Screen.clearScreen();
             let success = playWord();
             
-            if (success) {
+            if (success & ~(hintUsed)) {
+                if (currentDifficulty = 1) {
+                    let player2Score = player2Score + 1;
+                }
+                else {
+                    if (currentDifficulty = 2) {
+                        let player2Score = player2Score + 3;
+                    }
+                    else {
+                        let player2Score = player2Score + 5;
+                    }
+                }
+            }
 
-		if (currentDifficulty = 1) {
-
-			let player2Score = player2Score + 1;
-
-		}
-
-		else {
-
-			if (currentDifficulty = 2) {
-
-				let player2Score = player2Score + 2;
-
-			}
-
-			else {
-
-				let player2Score = player2Score + 3;
-
-			}
-
-		}
-
+            if (success & (hintUsed)) {
+                if (currentDifficulty = 1) {
+                    let player2Score = player2Score + 0;
+                }
+                else {
+                    if (currentDifficulty = 2) {
+                        let player2Score = player2Score + 1;
+                    }
+                    else {
+                        let player2Score = player2Score + 3;
+                    }
+                }
             }
             
             if (checkWordComplete()) {
-
                 do Screen.clearScreen();
                 do Output.moveCursor(10, 25);
                 do Output.printString("Good Job!");
@@ -407,9 +430,9 @@ class HangmanGame {
                 do Output.printInt(player2Score);
                 do Output.println();
                 do Output.moveCursor(12, 15);
-		do Output.printString("Press any key to continue: ");
-
-            } else {
+                do Output.printString("Press any key to continue: ");
+            } 
+            else {
                 do Screen.clearScreen();
                 do Output.moveCursor(10, 15);
                 do Output.printString("Better Luck Next Time!");
@@ -423,13 +446,11 @@ class HangmanGame {
                 do Output.printInt(player2Score);
                 do Output.println();
                 do Output.moveCursor(12, 15);
-		do Output.printString("Press any key to continue: ");
-
+                do Output.printString("Press any key to continue: ");
             }
 
             do Keyboard.readChar();
             let i = i + 1;
-
         }
         
         do Screen.clearScreen();
@@ -445,24 +466,23 @@ class HangmanGame {
         do Output.printString("Winner is: ");
         do Output.println();
 
-	if (player1Score > player2Score) {
-		do Output.printString("Player 1!");
-	}
-	else {
-		if (player1Score < player2Score) {
-			do Output.printString("Player 2!");
-		}
-		else {
-			do Output.printString("Both the Players!");
-		}
-	}
+        if (player1Score > player2Score) {
+            do Output.printString("Player 1!");
+        }
+        else {
+            if (player1Score < player2Score) {
+                do Output.printString("Player 2!");
+            }
+            else {
+                do Output.printString("Both the Players!");
+            }
+        }
 
         do Output.println();
         do Output.printString("Press any key to exit...");
         do Keyboard.readChar();
         
         return;
-
     }
 
     method boolean playWord() {
@@ -474,6 +494,7 @@ class HangmanGame {
         do resetGuessedLetters();
         
         while ((~wordCompleted) & (mistakes < 7)) {
+
             do drawGame();
             let key = Keyboard.readChar();
             
@@ -484,12 +505,16 @@ class HangmanGame {
         }
         
         return wordCompleted;
-        }
+    }
 
     method void drawGame() {
         var int i;
         
         do Screen.clearScreen();
+        
+        do Output.moveCursor(2, 0);
+        do Output.printString(feedbackMessage);
+        
         do drawHangman();
         
         // Draw word
@@ -500,9 +525,9 @@ class HangmanGame {
             if (isLetterGuessed(currentWord.charAt(i))) {
                 do Output.printChar(currentWord.charAt(i));
             } else {
-                do Output.printChar(95); // underscore
+                do Output.printChar(95);
             }
-            do Output.printChar(32); // space
+            do Output.printChar(32);
             let i = i + 1;
         }
         
@@ -523,12 +548,26 @@ class HangmanGame {
         
         do Output.moveCursor(21, 0);
         do Output.printString("Player ");
-        do Output.printInt(currentPlayer);
+        if (~(currentPlayer=0)) {
+            do Output.printInt(currentPlayer);
+        }
         do Output.printString(" Score: ");
         if (currentPlayer = 1) {
             do Output.printInt(player1Score);
         } else {
-            do Output.printInt(player2Score);
+            if (currentPlayer = 2) {        
+                do Output.printInt(player2Score);
+            } else {
+                do Output.printInt(score);
+            }        
+        }
+        
+        // Add hint instruction
+        do Output.moveCursor(22, 0);
+        if (~hintUsed) {
+            do Output.printString("Press ? for a hint");
+        } else {
+            do Output.printString("Hint already used for this word");
         }
         
         return;
@@ -566,18 +605,51 @@ class HangmanGame {
     }
 
     method boolean isValidGuess(char key) {
-        return ((key > 64) & (key < 91)) | ((key > 96) & (key < 123));
+        return ((key > 64) & (key < 91)) | ((key > 96) & (key < 123)) | (key = 63);
     }
 
     method void processGuess(char key) {
         var char upperKey;
         var int i;
         var boolean found;
+        var int position;
         
+        if (key = 63) {
+            if (hintUsed) {
+                let feedbackMessage = "You've already used your hint for this word!";
+                return;
+            }
+            
+            do Output.moveCursor(22, 0);
+            do Output.printString("Enter position (1-");
+            do Output.printInt(currentWord.length());
+            do Output.printString("): ");
+            
+            let position = Keyboard.readInt("");
+            
+            if ((position < 1) | (position > currentWord.length())) {
+                let feedbackMessage = "Invalid position! Try again.";
+                return;
+            }
+            
+            let position = position - 1;  // Convert to 0-based index
+            let upperKey = currentWord.charAt(position);
+            let guessedLetters[upperKey - 65] = 1;
+            let hintUsed = true;
+            let feedbackMessage = "Hint used! Letter revealed.";
+            return;
+        }
+        
+        // Regular letter guess processing (existing code)
         if (key > 96) {
             let upperKey = key - 32;
         } else {
             let upperKey = key;
+        }
+        
+        if (guessedLetters[upperKey - 65] = 1) {
+            let feedbackMessage = "You already guessed that letter! Try another.";
+            return;
         }
         
         let guessedLetters[upperKey - 65] = 1;
@@ -591,8 +663,28 @@ class HangmanGame {
             let i = i + 1;
         }
         
-        if (~found) {
+        if (found) {
+            // Correct guess messages
+            let i = Random.randRange(5);  // Select a random message
+            
+            if (i = 0) { let feedbackMessage = "Great job!"; }
+            if (i = 1) { let feedbackMessage = "Nice guess!"; }
+            if (i = 2) { let feedbackMessage = "Amazing!"; }
+            if (i = 3) { let feedbackMessage = "You got it!"; }
+            if (i = 4) { let feedbackMessage = "Excellent!"; }
+            else { let feedbackMessage = "Good thinking!"; }
+        } else {
+            // Wrong guess messages
             let mistakes = mistakes + 1;
+            
+            let i = Random.randRange(5);  // Select a random message
+            
+            if (i = 0) { let feedbackMessage = "Uh oh! Try again."; }
+            if (i = 1) { let feedbackMessage = "Not quite right."; }
+            if (i = 2) { let feedbackMessage = "Oops! That letter isn't in the word."; }
+            if (i = 3) { let feedbackMessage = "Keep trying!"; }
+            if (i = 4) { let feedbackMessage = "Don't give up!"; }
+            else { let feedbackMessage = "Hmm, not that one."; }
         }
         return;
     }
@@ -614,7 +706,6 @@ class HangmanGame {
     }
 
     method void resetGuessedLetters() {
-
         var int i;
 
         do Time.getTime();
@@ -624,6 +715,9 @@ class HangmanGame {
             let guessedLetters[i] = 0;
             let i = i + 1;
         }
+        
+        let hintUsed = false;
+        let feedbackMessage = "New word! Make your guess.";
         return;
     }
 
